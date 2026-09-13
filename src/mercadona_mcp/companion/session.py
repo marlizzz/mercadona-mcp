@@ -14,7 +14,6 @@ class SessionMaterial:
     """The verified minimum fields needed for authenticated Mercadona API calls."""
 
     token: str
-    refresh_token: str
     user_uuid: str
 
     def __repr__(self) -> str:
@@ -30,17 +29,13 @@ def extract_session_material(raw_storage_value: str) -> SessionMaterial:
     if not isinstance(payload, dict):
         raise _invalid_session()
     token = payload.get("token")
-    refresh_token = payload.get("refreshToken")
     user_uuid = payload.get("userUuid")
     if not isinstance(token, str) or not token:
-        raise _invalid_session()
-    if not isinstance(refresh_token, str) or not refresh_token:
         raise _invalid_session()
     if not isinstance(user_uuid, str) or not user_uuid:
         raise _invalid_session()
     return SessionMaterial(
         token=token,
-        refresh_token=refresh_token,
         user_uuid=user_uuid,
     )
 
@@ -53,7 +48,6 @@ def store_session(store: SecretStore, session: SessionMaterial) -> None:
             json.dumps(
                 {
                     "token": session.token,
-                    "refreshToken": session.refresh_token,
                     "userUuid": session.user_uuid,
                 },
                 separators=(",", ":"),

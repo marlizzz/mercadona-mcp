@@ -31,9 +31,7 @@ def test_invalid_browser_storage_requires_reauthentication(raw: str) -> None:
 
 def test_session_is_stored_and_deleted_through_secret_store() -> None:
     store = InMemorySecretStore()
-    session = extract_session_material(
-        '{"token":"access","refreshToken":"refresh","userUuid":"user"}'
-    )
+    session = extract_session_material('{"token":"access","userUuid":"user"}')
 
     store_session(store, session)
 
