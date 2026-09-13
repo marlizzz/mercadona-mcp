@@ -8,6 +8,7 @@ license = { file = "LICENSE" }
 authors = [{ name = "MercadonaMCP contributors" }]
 dependencies = [
     "httpx>=0.28,<1",
+    "keyring>=25,<26",
     "pydantic>=2.12,<3",
     "typer>=0.21,<1",
 ]
