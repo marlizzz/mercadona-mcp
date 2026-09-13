@@ -16,10 +16,10 @@ class Money(BaseModel):
     @field_validator("amount")
     @classmethod
     def require_two_decimal_places(cls, value: Decimal) -> Decimal:
-        exponent = value.as_tuple().exponent
-        if isinstance(exponent, int) and exponent < -2:
+        normalized = value.quantize(Decimal("0.01"))
+        if value != normalized:
             raise ValueError("amount must have at most two decimal places")
-        return value
+        return normalized
 
 
 class ProductSummary(BaseModel):
