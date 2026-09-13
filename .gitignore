@@ -1,0 +1,39 @@
+# Python environments and artifacts
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+dist/
+build/
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+secrets/
+session/
+sessions/
+*.sqlite
+*.sqlite3
+
+# Browser and Playwright artifacts
+playwright/.cache/
+playwright/.auth/
+playwright-report/
+test-results/
+browser-state/
+chrome-profile/
+
+# Operating-system and editor files
+.DS_Store
+.idea/
+.vscode/
