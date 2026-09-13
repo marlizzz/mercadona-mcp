@@ -7,17 +7,50 @@ from typing import Annotated
 
 import typer
 
+from mercadona_mcp.companion.login import LoginService
+from mercadona_mcp.companion.session import delete_session, load_session
 from mercadona_mcp.errors import MercadonaMCPError
 from mercadona_mcp.mercadona.catalog import CatalogClient
 from mercadona_mcp.models import ProductDetails, ProductSummary
+from mercadona_mcp.security import KeychainSecretStore
 
 app = typer.Typer(
     add_completion=False,
     help="MercadonaMCP local companion.",
     no_args_is_help=True,
 )
+auth_app = typer.Typer(help="Inspect or clear the local Mercadona session.")
+app.add_typer(auth_app, name="auth")
 
 _catalog_client_factory: Callable[[], CatalogClient] = CatalogClient
+
+
+@app.command()
+def login() -> None:
+    """Open dedicated Chrome for manual Mercadona authentication."""
+    try:
+        asyncio.run(LoginService(KeychainSecretStore()).login())
+    except MercadonaMCPError as error:
+        typer.echo(f"{error.code}: {error.message}", err=True)
+        raise typer.Exit(code=1) from error
+    typer.echo("Connected")
+
+
+@auth_app.command("status")
+def auth_status() -> None:
+    """Report whether a locally stored Mercadona session is available."""
+    try:
+        connected = load_session(KeychainSecretStore()) is not None
+    except MercadonaMCPError:
+        connected = False
+    typer.echo("Connected" if connected else "Not connected")
+
+
+@app.command()
+def logout() -> None:
+    """Delete locally stored Mercadona session material."""
+    delete_session(KeychainSecretStore())
+    typer.echo("Disconnected")
 
 
 def _warehouse_argument(postal_code: str | None, warehouse: str | None) -> str:
