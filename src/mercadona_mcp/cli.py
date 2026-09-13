@@ -10,8 +10,10 @@ import typer
 from mercadona_mcp.companion.login import LoginService
 from mercadona_mcp.companion.session import delete_session, load_session
 from mercadona_mcp.errors import MercadonaMCPError
+from mercadona_mcp.mercadona.auth import AuthenticatedMercadonaClient
+from mercadona_mcp.mercadona.cart import CartClient
 from mercadona_mcp.mercadona.catalog import CatalogClient
-from mercadona_mcp.models import ProductDetails, ProductSummary
+from mercadona_mcp.models import CartSnapshot, ProductDetails, ProductSummary
 from mercadona_mcp.security import KeychainSecretStore
 
 app = typer.Typer(
@@ -20,7 +22,9 @@ app = typer.Typer(
     no_args_is_help=True,
 )
 auth_app = typer.Typer(help="Inspect or clear the local Mercadona session.")
+cart_app = typer.Typer(help="Read the current Mercadona cart.")
 app.add_typer(auth_app, name="auth")
+app.add_typer(cart_app, name="cart")
 
 _catalog_client_factory: Callable[[], CatalogClient] = CatalogClient
 
@@ -51,6 +55,33 @@ def logout() -> None:
     """Delete locally stored Mercadona session material."""
     delete_session(KeychainSecretStore())
     typer.echo("Disconnected")
+
+
+@cart_app.command("show")
+def cart_show(
+    json_output: Annotated[
+        bool, typer.Option("--json", help="Print normalized JSON.")
+    ] = False,
+) -> None:
+    """Show the current authenticated Mercadona cart without changing it."""
+    try:
+
+        async def read_cart() -> CartSnapshot:
+            async with AuthenticatedMercadonaClient(KeychainSecretStore()) as client:
+                return await CartClient(client).get_cart()
+
+        cart = asyncio.run(read_cart())
+    except MercadonaMCPError as error:
+        typer.echo(f"{error.code}: {error.message}", err=True)
+        raise typer.Exit(code=1) from error
+    if json_output:
+        typer.echo(json.dumps(cart.model_dump(mode="json"), ensure_ascii=False))
+        return
+    typer.echo(f"Cart total: {cart.total.amount} {cart.total.currency}")
+    for item in cart.items:
+        typer.echo(
+            f"{item.quantity} × {item.product.name} — {item.line_total.amount} EUR"
+        )
 
 
 def _warehouse_argument(postal_code: str | None, warehouse: str | None) -> str:

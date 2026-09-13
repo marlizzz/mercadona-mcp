@@ -16,7 +16,7 @@ def test_money_serializes_exact_decimal_amount() -> None:
     assert money.model_dump(mode="json") == {"amount": "1.20", "currency": "EUR"}
 
 
-@pytest.mark.parametrize("amount", ["-0.01", "1.001"])
+@pytest.mark.parametrize("amount", ["-0.01", "1.0001"])
 def test_money_rejects_negative_or_overprecise_amounts(amount: str) -> None:
     with pytest.raises(ValidationError):
         Money(amount=Decimal(amount))

@@ -1,0 +1,28 @@
+{
+  "id": "cart",
+  "lines": [
+    {
+      "quantity": 2.0,
+      "sources": [],
+      "version": 7,
+      "product": {
+        "id": "4241",
+        "display_name": "Aceite de oliva Hacendado",
+        "thumbnail": "https://images.example.test/4241.jpg",
+        "share_url": "https://tienda.mercadona.es/product/4241/example",
+        "unavailable_from": null,
+        "price_instructions": {
+          "unit_size": 5.0,
+          "size_format": "l",
+          "unit_price": "17.25",
+          "reference_price": "3.450",
+          "reference_format": "L"
+        }
+      }
+    }
+  ],
+  "open_order_id": 1,
+  "products_count": 2,
+  "summary": {"total": "34.50"},
+  "version": 7
+}

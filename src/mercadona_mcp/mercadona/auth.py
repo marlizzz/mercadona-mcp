@@ -87,6 +87,11 @@ class AuthenticatedMercadonaClient:
             )
         return payload
 
+    @property
+    def user_uuid(self) -> str:
+        """Return the current internal customer identifier for endpoint construction."""
+        return self._require_session().user_uuid
+
     async def _request(self, method: str, path: str) -> httpx.Response:
         session = self._require_session()
         url = self._base_url.join(path)

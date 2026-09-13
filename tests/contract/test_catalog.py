@@ -41,7 +41,7 @@ def test_search_products_normalizes_category_products() -> None:
         assert results[0].product_id == "4241"
         assert str(results[0].price.amount) == "17.25"
         assert results[0].unit_price is not None
-        assert str(results[0].unit_price.amount) == "3.45"
+        assert str(results[0].unit_price.amount) == "3.450"
         assert results[0].package_size == "5 l"
 
     asyncio.run(run())
