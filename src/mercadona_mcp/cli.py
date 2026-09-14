@@ -13,7 +13,16 @@ from mercadona_mcp.errors import MercadonaMCPError
 from mercadona_mcp.mercadona.auth import AuthenticatedMercadonaClient
 from mercadona_mcp.mercadona.cart import CartClient
 from mercadona_mcp.mercadona.catalog import CatalogClient
-from mercadona_mcp.models import CartSnapshot, ProductDetails, ProductSummary
+from mercadona_mcp.mercadona.mutation import CartMutationClient
+from mercadona_mcp.models import (
+    CartChange,
+    CartMutation,
+    CartMutationResult,
+    CartSnapshot,
+    CartVersion,
+    ProductDetails,
+    ProductSummary,
+)
 from mercadona_mcp.security import KeychainSecretStore
 
 app = typer.Typer(
@@ -211,3 +220,50 @@ def product(
         typer.echo(f"Package: {result.package_size}")
     if result.description:
         typer.echo(result.description)
+
+
+@cart_app.command("set")
+def cart_set(
+    product_id: str,
+    quantity: int,
+    expected_version: Annotated[str, typer.Option("--expected-version")],
+    operation_id: Annotated[str, typer.Option("--operation-id")],
+    allow_live_write: Annotated[bool, typer.Option("--allow-live-write")] = False,
+) -> None:
+    """Set one product's exact final quantity after explicit confirmation."""
+    if not allow_live_write:
+        typer.echo("Live cart writes require --allow-live-write.", err=True)
+        raise typer.Exit(code=2)
+    if quantity < 0:
+        typer.echo("invalid_quantity: Quantity must be non-negative.", err=True)
+        raise typer.Exit(code=2)
+
+    async def update() -> CartMutationResult:
+        async with AuthenticatedMercadonaClient(KeychainSecretStore()) as client:
+            before = await CartClient(client).get_cart()
+            existing = next(
+                (
+                    item.quantity
+                    for item in before.items
+                    if item.product.product_id == product_id
+                ),
+                0,
+            )
+            typer.echo(f"Preview: {product_id}: {existing} → {quantity}")
+            if not typer.confirm("Apply this exact cart quantity?"):
+                raise typer.Abort()
+            return await CartMutationClient(client).update_cart(
+                CartMutation(
+                    changes=(CartChange(product_id=product_id, quantity=quantity),),
+                    expected_cart_version=CartVersion(value=expected_version),
+                    operation_id=operation_id,
+                )
+            )
+
+    try:
+        result = asyncio.run(update())
+    except MercadonaMCPError as error:
+        typer.echo(f"{error.code}: {error.message}", err=True)
+        raise typer.Exit(code=1) from error
+    version = result.after.version.value if result.after.version else "unavailable"
+    typer.echo(f"Updated cart; resulting version: {version}")

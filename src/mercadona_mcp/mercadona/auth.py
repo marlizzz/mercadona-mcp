@@ -60,7 +60,13 @@ class AuthenticatedMercadonaClient:
 
     async def get_json(self, path: str) -> Mapping[str, Any]:
         """Read one authenticated JSON resource from the Mercadona API origin."""
-        response = await self._request("GET", path)
+        return await self.request_json("GET", path)
+
+    async def request_json(
+        self, method: str, path: str, payload: Mapping[str, Any] | None = None
+    ) -> Mapping[str, Any]:
+        """Request one authenticated JSON resource from the Mercadona API origin."""
+        response = await self._request(method, path, payload)
         if response.status_code in {401, 403}:
             raise _reauthentication_required()
         if response.status_code >= 500:
@@ -92,7 +98,9 @@ class AuthenticatedMercadonaClient:
         """Return the current internal customer identifier for endpoint construction."""
         return self._require_session().user_uuid
 
-    async def _request(self, method: str, path: str) -> httpx.Response:
+    async def _request(
+        self, method: str, path: str, payload: Mapping[str, Any] | None = None
+    ) -> httpx.Response:
         session = self._require_session()
         url = self._base_url.join(path)
         if url.host != "tienda.mercadona.es" or url.scheme != "https":
@@ -102,6 +110,7 @@ class AuthenticatedMercadonaClient:
                 method,
                 url,
                 headers={"Authorization": f"Bearer {session.token}"},
+                json=payload,
             )
         except httpx.RequestError as error:
             raise MercadonaMCPError(
