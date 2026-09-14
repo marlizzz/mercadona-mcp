@@ -1,0 +1,34 @@
+#!/bin/sh
+# Run the local MercadonaMCP tunnel with its runtime credential from Keychain.
+# The Keychain item contains the secret; this file intentionally does not.
+
+set -eu
+
+keychain_service="${MERCADONA_MCP_TUNNEL_KEYCHAIN_SERVICE:-mercadona-mcp-control-plane-api-key}"
+profile="${MERCADONA_MCP_TUNNEL_PROFILE:-mercadona-mcp}"
+account="${USER:-$(id -un)}"
+
+case "${1:-}" in
+  doctor|run)
+    action="$1"
+    shift
+    ;;
+  *)
+    echo "Usage: $0 {doctor|run} [tunnel-client options]" >&2
+    exit 64
+    ;;
+esac
+
+if ! control_plane_api_key="$(security find-generic-password \
+  -a "$account" \
+  -s "$keychain_service" \
+  -w)"; then
+  echo "Tunnel runtime API key was not found in macOS Keychain." >&2
+  echo "Store it under service '$keychain_service' and account '$account'." >&2
+  exit 1
+fi
+
+export CONTROL_PLANE_API_KEY="$control_plane_api_key"
+unset control_plane_api_key
+
+exec tunnel-client "$action" --profile "$profile" "$@"
