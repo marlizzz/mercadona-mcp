@@ -21,7 +21,7 @@ jobs:
       MERCADONA_MCP_LIVE_TESTS: "0"
     steps:
       - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v7
         with:
           python-version: ${{ matrix.python-version }}
           enable-cache: true
