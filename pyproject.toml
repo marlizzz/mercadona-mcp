@@ -1,6 +1,6 @@
 [project]
 name = "mercadona-mcp"
-version = "0.0.0"
+version = "0.1.0"
 description = "Unofficial, privacy-first MCP companion for Mercadona Online."
 readme = "README.md"
 requires-python = ">=3.12"

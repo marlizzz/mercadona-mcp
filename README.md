@@ -1,6 +1,6 @@
 # MercadonaMCP
 
-> Status: personal macOS MVP. Unofficial, pre-release software.
+> Status: v0.1.0 personal macOS MVP. Unofficial, pre-release software.
 
 MercadonaMCP is a local [Model Context Protocol](https://modelcontextprotocol.io/)
 companion for searching Mercadona Online products and reading or carefully
@@ -191,3 +191,9 @@ and [THREAT_MODEL.md](THREAT_MODEL.md).
 ## License
 
 [MIT](LICENSE)
+
+## Release notes
+
+See [CHANGELOG.md](CHANGELOG.md),
+[known limitations](docs/known-limitations.md), and the
+[personal-MVP release checklist](docs/release-checklist.md).
