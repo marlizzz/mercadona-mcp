@@ -1,4 +1,4 @@
-# v0.1.0 personal-MVP release checklist
+# v0.1.1 personal-MVP release checklist
 
 This checklist prepares a local Git release only. Do not submit the project to
 a public Plugin Directory or publish it as a hosted service.
@@ -13,7 +13,7 @@ a public Plugin Directory or publish it as a hosted service.
 - [ ] `uv run mypy src tests` passes.
 - [ ] `uv run pytest` passes with no network or live-account dependency.
 - [ ] `uv build` produces the expected sdist and wheel.
-- [ ] Package version is `0.1.0` in both `pyproject.toml` and `uv.lock`.
+- [ ] Package version is `0.1.1` in both `pyproject.toml` and `uv.lock`.
 
 ## Security and privacy
 
@@ -29,6 +29,9 @@ a public Plugin Directory or publish it as a hosted service.
 ## Optional personal acceptance
 
 - [ ] Visible Chrome login succeeds without the CLI receiving a password.
+- [ ] Bounded product search succeeds for a known warehouse. It uses a
+      short-lived isolated headed Chrome window; it does not traverse catalog
+      categories as a fallback.
 - [ ] Catalog read and cart read succeed for the tester's own account.
 - [ ] A controlled cart write uses an inexpensive selected product, an absolute
       final quantity, explicit confirmation, a new operation ID, and restores
