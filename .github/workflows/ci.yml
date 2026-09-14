@@ -1,0 +1,39 @@
+name: Quality
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
+    env:
+      # The suite must remain offline. Do not add Mercadona or tunnel secrets.
+      MERCADONA_MCP_LIVE_TESTS: "0"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+      - name: Verify lockfile
+        run: uv lock --check
+      - name: Install locked dependencies
+        run: uv sync --locked --all-groups
+      - name: Lint
+        run: uv run ruff check .
+      - name: Type check
+        run: uv run mypy src tests
+      - name: Test offline suite
+        run: uv run pytest
+      - name: Build package
+        run: uv build
