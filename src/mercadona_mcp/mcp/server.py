@@ -1,7 +1,10 @@
 """Read-only FastMCP server for MercadonaMCP."""
 
+from typing import Annotated
+
 from mcp.server.fastmcp import FastMCP
 from mcp.types import ToolAnnotations
+from pydantic import Field
 
 from mercadona_mcp.companion.session import load_session
 from mercadona_mcp.errors import MercadonaMCPError
@@ -9,7 +12,13 @@ from mercadona_mcp.mercadona.auth import AuthenticatedMercadonaClient
 from mercadona_mcp.mercadona.cart import CartClient
 from mercadona_mcp.mercadona.catalog import CatalogClient
 from mercadona_mcp.mercadona.mutation import CartMutationClient, OperationCache
-from mercadona_mcp.models import CartChange, CartMutation, CartVersion
+from mercadona_mcp.mercadona.search import BrowserProductSearchClient
+from mercadona_mcp.models import (
+    CartChange,
+    CartMutation,
+    CartVersion,
+    ProductSearchQuery,
+)
 from mercadona_mcp.security import KeychainSecretStore
 
 mcp = FastMCP(
@@ -33,12 +42,39 @@ async def auth_status() -> dict[str, bool]:
 
 @mcp.tool()
 async def search_products(
-    query: str, warehouse: str, limit: int = 10
+    query: Annotated[str, Field(min_length=1)],
+    warehouse: Annotated[str, Field(min_length=1)],
+    limit: Annotated[int, Field(ge=1, le=10)] = 5,
 ) -> list[dict[str, object]]:
-    """Search products available in one opaque Mercadona warehouse code."""
-    async with CatalogClient() as client:
-        products = await client.search_products(query, warehouse=warehouse, limit=limit)
+    """Search one concise Spanish product phrase; never send a full instruction.
+
+    Use product nouns and important constraints, for example ``helado chocolate``
+    or ``pepino holandés``. For several products use ``search_products_batch``.
+    For conceptual requests, try a few plausible Spanish phrases. This tool never
+    traverses the complete catalogue as a fallback.
+    """
+    products = await BrowserProductSearchClient().search_products(
+        query, warehouse=warehouse, limit=limit
+    )
     return [product.model_dump(mode="json") for product in products]
+
+
+@mcp.tool()
+async def search_products_batch(
+    queries: Annotated[list[ProductSearchQuery], Field(min_length=1, max_length=10)],
+    warehouse: Annotated[str, Field(min_length=1)],
+) -> dict[str, object]:
+    """Search several concise Spanish product phrases concurrently and independently.
+
+    Use one query per requested product or product family. Preserve each caller
+    key, inspect candidates before selecting a product ID, and do not submit a
+    whole shopping instruction as one query. A failure for one query is returned
+    in that query's result without discarding successful candidates.
+    """
+    result = await BrowserProductSearchClient().search_batch(
+        queries, warehouse=warehouse
+    )
+    return result.model_dump(mode="json")
 
 
 @mcp.tool()

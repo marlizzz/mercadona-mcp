@@ -132,12 +132,18 @@ def test_mcp_discovery_exposes_only_allowed_tools_and_marks_writes_destructive(
     assert set(tools_by_name) == {
         "auth_status",
         "search_products",
+        "search_products_batch",
         "get_product",
         "get_cart",
         "update_cart",
     }
     assert tools_by_name["update_cart"].annotations is not None
     assert tools_by_name["update_cart"].annotations.destructiveHint is True
+    single_search_schema = tools_by_name["search_products"].inputSchema
+    assert single_search_schema["properties"]["limit"]["default"] == 5
+    assert single_search_schema["properties"]["limit"]["maximum"] == 10
+    batch_search_schema = tools_by_name["search_products_batch"].inputSchema
+    assert batch_search_schema["properties"]["queries"]["maxItems"] == 10
     assert all(
         forbidden not in tools_by_name
         for forbidden in ("checkout", "place_order", "payment", "login")

@@ -101,7 +101,7 @@ class CatalogClient:
                 for product in _require_list(leaf, "products"):
                     name = _require_string(product, "display_name")
                     if all(term in name.casefold() for term in query_terms):
-                        matches.append(_to_product_summary(product))
+                        matches.append(normalize_product_summary(product))
                         if len(matches) == limit:
                             return matches
         return matches
@@ -118,7 +118,7 @@ class CatalogClient:
             if error.code is ErrorCode.PRODUCT_NOT_FOUND:
                 raise
             raise
-        summary = _to_product_summary(payload)
+        summary = normalize_product_summary(payload)
         details = _require_mapping(payload, "details", allow_missing=True)
         categories = tuple(
             _require_string(category, "name")
@@ -185,7 +185,7 @@ class CatalogClient:
         raise AssertionError("read retry loop ended unexpectedly")
 
 
-def _to_product_summary(payload: Mapping[str, Any]) -> ProductSummary:
+def normalize_product_summary(payload: Mapping[str, Any]) -> ProductSummary:
     instructions = _require_mapping(payload, "price_instructions")
     unit_size = instructions.get("unit_size")
     size_format = instructions.get("size_format")

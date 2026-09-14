@@ -14,6 +14,7 @@ from mercadona_mcp.mercadona.auth import AuthenticatedMercadonaClient
 from mercadona_mcp.mercadona.cart import CartClient
 from mercadona_mcp.mercadona.catalog import CatalogClient
 from mercadona_mcp.mercadona.mutation import CartMutationClient
+from mercadona_mcp.mercadona.search import BrowserProductSearchClient
 from mercadona_mcp.models import (
     CartChange,
     CartMutation,
@@ -36,6 +37,9 @@ app.add_typer(auth_app, name="auth")
 app.add_typer(cart_app, name="cart")
 
 _catalog_client_factory: Callable[[], CatalogClient] = CatalogClient
+_search_client_factory: Callable[[], BrowserProductSearchClient] = (
+    BrowserProductSearchClient
+)
 
 
 @app.command()
@@ -142,21 +146,27 @@ def search(
         str | None,
         typer.Option(help="Observed Mercadona warehouse code, such as mad3."),
     ] = None,
-    limit: Annotated[int, typer.Option(min=1, max=50)] = 10,
+    limit: Annotated[int, typer.Option(min=1, max=10)] = 5,
     json_output: Annotated[
         bool, typer.Option("--json", help="Print normalized JSON.")
     ] = False,
 ) -> None:
-    """Search public catalog products for one delivery area."""
+    """Search a bounded set of products for one delivery area."""
 
     try:
+        selected_warehouse = _warehouse_argument(postal_code, warehouse)
+        if postal_code:
+            async def resolve_warehouse() -> str:
+                client = _catalog_client_factory()
+                try:
+                    return await client.resolve_warehouse(selected_warehouse)
+                finally:
+                    await client.aclose()
+
+            selected_warehouse = asyncio.run(resolve_warehouse())
         products = asyncio.run(
-            _with_catalog(
-                postal_code,
-                warehouse,
-                lambda client, selected_warehouse: client.search_products(
-                    query, warehouse=selected_warehouse, limit=limit
-                ),
+            _search_client_factory().search_products(
+                query, warehouse=selected_warehouse, limit=limit
             )
         )
     except MercadonaMCPError as error:

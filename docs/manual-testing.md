@@ -27,18 +27,19 @@ Expected: Chrome opens at Mercadona; complete authentication there; the CLI
 prints `Connected`; status reports `Connected`. Confirm only that no session
 artifact appears in `git status --short`; do not print Keychain content.
 
-## 3. Read-only catalog and cart checks
+## 3. Read-only product, catalog, and cart checks
 
 Use either a five-digit postal code or an already observed warehouse code:
 
 ```bash
-uv run mercadona search "leche" --postal-code 28001 --limit 5
-uv run mercadona search "leche" --postal-code 28001 --limit 5 --json
+uv run mercadona search "leche entera" --postal-code 28001 --limit 5
+uv run mercadona search "pepino holandés" --postal-code 28001 --limit 5 --json
 uv run mercadona product 4241 --postal-code 28001
 uv run mercadona cart show
 uv run mercadona cart show --json
 ```
 
+The search command briefly opens an isolated Chrome window and then closes it.
 Product ID `4241` is only an example and may not be available in the current
 delivery area. These commands do not change the cart.
 
@@ -72,7 +73,7 @@ Keep the second command running. In a new ChatGPT conversation with
 MercadonaMCP enabled, ask:
 
 1. `Check whether my Mercadona account is connected.`
-2. `Find up to five whole-milk products available in my delivery area. Do not change my cart.`
+2. `Find up to five whole-milk products and one cucumber option in my delivery area. Do not change my cart.`
 3. `Show my current Mercadona cart.`
 
 Before any ChatGPT cart write, ensure the host displays the exact final

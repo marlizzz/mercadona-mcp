@@ -2,6 +2,15 @@
 
 All notable changes to MercadonaMCP are documented here.
 
+## 0.1.1 — 2026-09-14
+
+- Replaced normal product-search catalog traversal with bounded direct website
+  search through an isolated Chrome context.
+- Added a concurrent `search_products_batch` MCP tool for up to ten concise
+  Spanish product phrases, with deduplication, per-query limits, retries,
+  timeouts, and partial-failure results.
+- Preserved catalog product-detail reads and all cart safety boundaries.
+
 ## 0.1.0 — 2026-09-14
 
 Initial personal macOS MVP.

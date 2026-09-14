@@ -1,6 +1,6 @@
 # Known limitations
 
-MercadonaMCP v0.1.0 is a personal macOS MVP, not a public integration.
+MercadonaMCP v0.1.1 is a personal macOS MVP, not a public integration.
 
 - **Platform:** Login support is macOS-only and requires Google Chrome at its
   standard application location.
@@ -10,6 +10,10 @@ MercadonaMCP v0.1.0 is a personal macOS MVP, not a public integration.
 - **Observed APIs:** Catalog and cart adapters rely on observed Mercadona web
   behavior, which can change without notice. This is not an official Mercadona
   partner API.
+- **Browser-backed search:** Search requires a short-lived visible Chrome
+  context because the provider currently rejects direct programmatic HTTP.
+  Website or anti-automation changes can break it; no raw HTTP fallback is
+  provided.
 - **Delivery area:** Product availability, price, and catalog results depend on
   the selected delivery area.
 - **Confirmation boundary:** The MCP update tool is destructive and relies on

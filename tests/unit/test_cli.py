@@ -42,8 +42,19 @@ class _FakeCatalogClient:
         return ProductDetails(**_PRODUCT.model_dump(), description="Aceite de oliva.")
 
 
+class _FakeSearchClient:
+    async def search_products(
+        self, query: str, *, warehouse: str, limit: int
+    ) -> list[ProductSummary]:
+        assert query == "aceite"
+        assert warehouse == "mad3"
+        assert limit == 1
+        return [_PRODUCT]
+
+
 def test_search_prints_human_readable_results(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(cli, "_catalog_client_factory", _FakeCatalogClient)
+    monkeypatch.setattr(cli, "_search_client_factory", _FakeSearchClient)
 
     result = _runner.invoke(
         app, ["search", "aceite", "--postal-code", "28001", "--limit", "1"]

@@ -1,6 +1,6 @@
 # MercadonaMCP
 
-> Status: v0.1.0 personal macOS MVP. Unofficial, pre-release software.
+> Status: v0.1.1 personal macOS MVP. Unofficial, pre-release software.
 
 MercadonaMCP is a local [Model Context Protocol](https://modelcontextprotocol.io/)
 companion for searching Mercadona Online products and reading or carefully
@@ -15,7 +15,8 @@ delivery slot.
 - Opens a dedicated, visible Chrome session for the user to log into
   Mercadona; the project does not receive or store the password.
 - Keeps minimized Mercadona session material in macOS Keychain.
-- Searches the delivery-area-dependent catalog and returns normalized products.
+- Searches up to ten concise Spanish product phrases per request and returns
+  bounded, normalized candidates.
 - Reads the authenticated cart.
 - Sets exact final cart quantities with version checks, idempotent operation
   IDs, and post-write verification.
@@ -129,7 +130,8 @@ server manually.
 | Tool | Effect |
 | --- | --- |
 | `auth_status` | Reports whether a usable local Mercadona session exists. |
-| `search_products` | Searches products for an opaque warehouse code. |
+| `search_products` | Searches one concise product phrase; defaults to five candidates (max 10). |
+| `search_products_batch` | Searches up to ten independently labelled product phrases; partial failures stay scoped to their query. |
 | `get_product` | Returns normalized details for one product. |
 | `get_cart` | Reads the current authenticated cart. |
 | `update_cart` | Destructive: sets absolute quantities after the host obtains confirmation. |
@@ -158,6 +160,9 @@ and [THREAT_MODEL.md](THREAT_MODEL.md).
 ## Limitations
 
 - macOS and Google Chrome are the only supported login environment.
+- Product search opens a short-lived, isolated visible Chrome window. The
+  provider currently rejects the equivalent direct HTTP request, so this
+  behavior can need maintenance if the website changes.
 - Mercadona endpoints are observed web behavior, not a documented partner API;
   they can change or stop working.
 - Availability and prices depend on delivery area and can change.
