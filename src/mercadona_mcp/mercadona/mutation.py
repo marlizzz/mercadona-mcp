@@ -30,12 +30,17 @@ class _StoredOperation:
     expires_at: float
 
 
+OperationCache = dict[str, _StoredOperation]
+
+
 class CartMutationClient:
     """Set exact cart quantities with version checks and idempotent replay."""
 
-    def __init__(self, writer: CartWriter) -> None:
+    def __init__(
+        self, writer: CartWriter, operations: OperationCache | None = None
+    ) -> None:
         self._writer = writer
-        self._operations: dict[str, _StoredOperation] = {}
+        self._operations = operations if operations is not None else {}
 
     async def update_cart(self, mutation: CartMutation) -> CartMutationResult:
         """Apply absolute final quantities once, then verify the resulting cart."""

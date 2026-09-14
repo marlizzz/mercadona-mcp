@@ -1,12 +1,15 @@
 """Read-only FastMCP server for MercadonaMCP."""
 
 from mcp.server.fastmcp import FastMCP
+from mcp.types import ToolAnnotations
 
 from mercadona_mcp.companion.session import load_session
 from mercadona_mcp.errors import MercadonaMCPError
 from mercadona_mcp.mercadona.auth import AuthenticatedMercadonaClient
 from mercadona_mcp.mercadona.cart import CartClient
 from mercadona_mcp.mercadona.catalog import CatalogClient
+from mercadona_mcp.mercadona.mutation import CartMutationClient, OperationCache
+from mercadona_mcp.models import CartChange, CartMutation, CartVersion
 from mercadona_mcp.security import KeychainSecretStore
 
 mcp = FastMCP(
@@ -16,6 +19,7 @@ mcp = FastMCP(
         "Never claim a cart change occurred unless a mutation tool returns success."
     ),
 )
+_operation_cache: OperationCache = {}
 
 
 @mcp.tool()
@@ -51,6 +55,22 @@ async def get_cart() -> dict[str, object]:
     async with AuthenticatedMercadonaClient(KeychainSecretStore()) as client:
         cart = await CartClient(client).get_cart()
     return cart.model_dump(mode="json")
+
+
+@mcp.tool(annotations=ToolAnnotations(destructiveHint=True))
+async def update_cart(
+    items: list[CartChange], expected_cart_version: str, operation_id: str
+) -> dict[str, object]:
+    """Set exact final quantities after the host obtains explicit user confirmation."""
+    async with AuthenticatedMercadonaClient(KeychainSecretStore()) as client:
+        result = await CartMutationClient(client, _operation_cache).update_cart(
+            CartMutation(
+                changes=tuple(items),
+                expected_cart_version=CartVersion(value=expected_cart_version),
+                operation_id=operation_id,
+            )
+        )
+    return result.model_dump(mode="json")
 
 
 def main() -> None:
