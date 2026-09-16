@@ -613,7 +613,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "mypy", specifier = ">=1.19,<2" },
+    { name = "mypy", specifier = ">=1.19,<3" },
     { name = "pytest", specifier = ">=9.0,<10" },
     { name = "ruff", specifier = ">=0.15,<1" },
 ]
