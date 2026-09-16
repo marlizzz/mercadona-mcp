@@ -3,6 +3,7 @@
 from decimal import Decimal
 
 import pytest
+import typer
 from typer.testing import CliRunner
 
 from mercadona_mcp import cli
@@ -79,4 +80,8 @@ def test_catalog_commands_require_one_delivery_area_argument() -> None:
     result = _runner.invoke(app, ["search", "aceite"])
 
     assert result.exit_code != 0
-    assert "one of --postal-code or --warehouse is required" in result.stderr
+    with pytest.raises(
+        typer.BadParameter,
+        match="one of --postal-code or --warehouse is required",
+    ):
+        cli._warehouse_argument(None, None)
