@@ -605,7 +605,7 @@ dev = [
 requires-dist = [
     { name = "httpx", specifier = ">=0.28,<1" },
     { name = "keyring", specifier = ">=25,<26" },
-    { name = "mcp", extras = ["cli"], specifier = ">=1.26,<2" },
+    { name = "mcp", extras = ["cli"], specifier = ">=1.26,<3" },
     { name = "playwright", specifier = ">=1.58,<2" },
     { name = "pydantic", specifier = ">=2.12,<3" },
     { name = "typer", specifier = ">=0.21,<1" },
